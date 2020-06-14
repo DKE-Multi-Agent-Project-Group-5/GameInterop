@@ -71,8 +71,10 @@ public class QLearning {
         }
     }
     
-    private State prevState;
-    private State currState;
+    private State prevState1;
+    private State prevState2;
+    private State currState1;
+    private State currState2;
     private int prevAction = 0;
     private int currAction;
     private static float epsilon;
@@ -80,7 +82,9 @@ public class QLearning {
     private float alpha;
     private int numActions;
     private int numStates;
-    private double[][] qTable;
+//    private double[][] qTable;
+    private double[][][] qTable;
+    
     
     private Point agentPosition;
     private ObjectPercept state;
@@ -102,196 +106,347 @@ public class QLearning {
         this.alpha = alpha;
         this.numActions = numActions;
         this.numStates = numStates;
+//        this.qTable = new double[numStates][numStates][numActions];
 //        this.qTable = new double[numStates][numActions];
-        this.qTable = readTableFromFile();
+        this.qTable = readTableFromFile3D();
         this.rn = new Random();
         this.actionQueue = new LinkedList<>();
     }
     
-    /**
-     *
-     * @param state Objects in vision
-     * @return index with maximum value action from Q-Table
-     */
-    public int getMaxValueAction(ObjectPerceptType state) {
-        State[] allStates = State.class.getEnumConstants();
-        int stateIndex = 0;
-        for (State tempState : allStates) {
-            if (state.name().equals(tempState.name())) {
-                stateIndex = tempState.value;
-            }
-        }
-        double[] qTablePart = qTable[stateIndex];
-        int maxIndex = getMaxValue(qTablePart);
-        double chance = Math.random();
-        Random rand = new Random();
-        
-        // Perform random action if chance is smaller than epsilon value
-        // Otherwise return maxValue action index from Q-table
-        if (chance < epsilon) {
-            return rand.nextInt(this.numActions);
-        } else {
-            return maxIndex;
-        }
-    }
-    
-    /**
-     *
-     * @param state Smells detected
-     * @return index with maximum value action from Q-Table
-     */
-    public int getMaxValueAction(SmellPerceptType state) {
-        State[] allStates = State.class.getEnumConstants();
-        int stateIndex = 0;
-        for (State tempState : allStates) {
-            if (state.name().equals(tempState.name())) {
-                stateIndex = tempState.value;
-            }
-        }
-        double[] qTablePart = qTable[stateIndex];
-        int maxIndex = getMaxValue(qTablePart);
-        double chance = Math.random();
-        Random rand = new Random();
-    
-        // Perform random action if chance is smaller than epsilon value
-        // Otherwise return maxValue action index from Q-table
-        if (chance < epsilon) {
-            return rand.nextInt(this.numActions);
-        } else {
-            return maxIndex;
-        }
-    }
-    
-    /**
-     *
-     * @param state Sounds detected
-     * @return index with maximum value action from Q-Table
-     */
-    public int getMaxValueAction(SoundPerceptType state) {
-        State[] allStates = State.class.getEnumConstants();
-        int stateIndex = 0;
-        for (State tempState : allStates) {
-            if (state.name().equals(tempState.name())) {
-                stateIndex = tempState.value;
-            }
-        }
-        double[] qTablePart = qTable[stateIndex];
-        int maxIndex = getMaxValue(qTablePart);
-        double chance = Math.random();
-        Random rand = new Random();
-    
-        // Perform random action if chance is smaller than epsilon value
-        // Otherwise return maxValue action index from Q-table
-        if (chance < epsilon) {
-            return rand.nextInt(this.numActions);
-        } else {
-            return maxIndex;
-        }
-    }
-    
-    /**
-     *
-     * @param state Smells detected
-     * @param currentAction maxValue action to be executed
-     * @param reward
-     */
-    protected void updateQTable(SmellPerceptType state, int currentAction, float reward) {
-        State[] allStates = State.class.getEnumConstants();
-        if (this.prevState == null) {
-            this.prevState = State.EmptySpace;
-        }
-        
-        this.currAction = currentAction;
-        
-        for (State cState : allStates) {
-            if (state.name().equals(cState.name())) {
-                this.currState = cState;
-                break;
-            }
-        }
-        
-        //Bellman Equation to update Q-table
-        double update = reward + gamma * findMaxQState(this.currState.value) - qTable[this.prevState.value][this.prevAction];
-        qTable[this.prevState.value][this.prevAction] = qTable[this.prevState.value][this.prevAction] + alpha * update;
-        
-        this.prevAction = this.currAction;
-        this.prevState = this.currState;
-    }
-    
-    /**
-     *
-     * @param state Sounds detected
-     * @param currentAction maxValue action to be executed
-     * @param reward
-     */
-    protected void updateQTable(SoundPerceptType state, int currentAction, float reward) {
-        State[] allStates = State.class.getEnumConstants();
-        if (this.prevState == null) {
-            this.prevState = State.EmptySpace;
-        }
-        
-        this.currAction = currentAction;
-        
-        for (State cState : allStates) {
-            if (state.name().equals(cState.name())) {
-                this.currState = cState;
-                break;
-            }
-        }
-    
-        //Bellman Equation to update Q-table
-        double update = reward + gamma * findMaxQState(this.currState.value) - qTable[this.prevState.value][this.prevAction];
-        qTable[this.prevState.value][this.prevAction] = qTable[this.prevState.value][this.prevAction] + alpha * update;
-        
-        this.prevAction = this.currAction;
-        this.prevState = this.currState;
-    }
-    
-    /**
-     *
-     * @param state Objects in vision
-     * @param currentAction maxValue action to be executed
-     * @param reward
-     */
-    protected void updateQTable(ObjectPerceptType state, int currentAction, float reward) {
-        State[] allStates = State.class.getEnumConstants();
-        if (this.prevState == null) {
-            this.prevState = State.EmptySpace;
-        }
-        
-        this.currAction = currentAction;
-    
-        for (State cState : allStates) {
-            if (state.name().equals(cState.name())) {
-                this.currState = cState;
-                break;
-            }
-        }
-    
-        //Bellman Equation to update Q-table
-        double update = reward + gamma * findMaxQState(this.currState.value) - qTable[this.prevState.value][this.prevAction];
-        qTable[this.prevState.value][this.prevAction] = qTable[this.prevState.value][this.prevAction] + alpha * update;
-        
-        this.prevAction = this.currAction;
-        this.prevState = this.currState;
-        
-        // For printing the Q-table
-//        for (int i = 0; i < numStates; i++) {
-//            for (int j = 0; j < numActions; j++) {
-//                System.out.print("" + qTable[i][j] + ",");
+//    /**
+//     *
+//     * @param state Objects in vision
+//     * @return index with maximum value action from Q-Table
+//     */
+//    public int getMaxValueAction(ObjectPerceptType state) {
+//        State[] allStates = State.class.getEnumConstants();
+//        int stateIndex = 0;
+//        for (State tempState : allStates) {
+//            if (state.name().equals(tempState.name())) {
+//                stateIndex = tempState.value;
 //            }
-//            System.out.println();
 //        }
-//        System.out.println();
+//        double[] qTablePart = qTable[stateIndex];
+//        int maxIndex = getMaxValue(qTablePart);
+//        double chance = Math.random();
+//        Random rand = new Random();
+//
+//        // Perform random action if chance is smaller than epsilon value
+//        // Otherwise return maxValue action index from Q-table
+//        if (chance < epsilon) {
+//            return rand.nextInt(this.numActions);
+//        } else {
+//            return maxIndex;
+//        }
+//    }
+//
+//    /**
+//     *
+//     * @param state Smells detected
+//     * @return index with maximum value action from Q-Table
+//     */
+//    public int getMaxValueAction(SmellPerceptType state) {
+//        State[] allStates = State.class.getEnumConstants();
+//        int stateIndex = 0;
+//        for (State tempState : allStates) {
+//            if (state.name().equals(tempState.name())) {
+//                stateIndex = tempState.value;
+//            }
+//        }
+//        double[] qTablePart = qTable[stateIndex];
+//        int maxIndex = getMaxValue(qTablePart);
+//        double chance = Math.random();
+//        Random rand = new Random();
+//
+//        // Perform random action if chance is smaller than epsilon value
+//        // Otherwise return maxValue action index from Q-table
+//        if (chance < epsilon) {
+//            return rand.nextInt(this.numActions);
+//        } else {
+//            return maxIndex;
+//        }
+//    }
+//
+//    /**
+//     *
+//     * @param state Sounds detected
+//     * @return index with maximum value action from Q-Table
+//     */
+//    public int getMaxValueAction(SoundPerceptType state) {
+//        State[] allStates = State.class.getEnumConstants();
+//        int stateIndex = 0;
+//        for (State tempState : allStates) {
+//            if (state.name().equals(tempState.name())) {
+//                stateIndex = tempState.value;
+//            }
+//        }
+//        double[] qTablePart = qTable[stateIndex];
+//        int maxIndex = getMaxValue(qTablePart);
+//        double chance = Math.random();
+//        Random rand = new Random();
+//
+//        // Perform random action if chance is smaller than epsilon value
+//        // Otherwise return maxValue action index from Q-table
+//        if (chance < epsilon) {
+//            return rand.nextInt(this.numActions);
+//        } else {
+//            return maxIndex;
+//        }
+//    }
+    
+    /**
+     *
+     * @param Combined visual and sound states
+     * @return index with maximum value action from Q-Table
+     */
+    public int getMaxValueAction(ObjectPerceptType visionState, SoundPerceptType soundState) {
+        State[] allStates = State.class.getEnumConstants();
+        int stateIndex1 = 0;
+        int stateIndex2 = 0;
+        for (State tempState : allStates) {
+            if (visionState.name().equals(tempState.name())) {
+                stateIndex1 = tempState.value;
+            }
+            if (soundState.name().equals(tempState.name())) {
+                stateIndex2 = tempState.value;
+            }
+        }
+        double[] qTablePart = qTable[stateIndex1][stateIndex2];
+        int maxIndex = getMaxValue(qTablePart);
+        double chance = Math.random();
+        Random rand = new Random();
+    
+        // Perform random action if chance is smaller than epsilon value
+        // Otherwise return maxValue action index from Q-table
+        if (chance < epsilon) {
+            return rand.nextInt(this.numActions);
+        } else {
+            return maxIndex;
+        }
     }
     
-    protected double [][] getQTable(){
+    /**
+     *
+     * @param Combined visual and sound states
+     * @return index with maximum value action from Q-Table
+     */
+    public int getMaxValueAction(ObjectPerceptType visionState, ObjectPerceptType visionState2) {
+        State[] allStates = State.class.getEnumConstants();
+        int stateIndex1 = 0;
+        int stateIndex2 = 0;
+        for (State tempState : allStates) {
+            if (visionState.name().equals(tempState.name())) {
+                stateIndex1 = tempState.value;
+            }
+            if (visionState2.name().equals(tempState.name())) {
+                stateIndex2 = tempState.value;
+            }
+        }
+        
+        double[] qTablePart = qTable[stateIndex1][stateIndex2];
+        int maxIndex = getMaxValue(qTablePart);
+        double chance = Math.random();
+        Random rand = new Random();
+        
+        // Perform random action if chance is smaller than epsilon value
+        // Otherwise return maxValue action index from Q-table
+        if (chance < epsilon) {
+            return rand.nextInt(this.numActions);
+        } else {
+            return maxIndex;
+        }
+    }
+    
+//    /**
+//     *
+//     * @param state Smells detected
+//     * @param currentAction maxValue action to be executed
+//     * @param reward
+//     */
+//    protected void updateQTable(SmellPerceptType state, int currentAction, float reward) {
+//        State[] allStates = State.class.getEnumConstants();
+//        if (this.prevState1 == null) {
+//            this.prevState1 = State.EmptySpace;
+//        }
+//
+//        this.currAction = currentAction;
+//
+//        for (State cState : allStates) {
+//            if (state.name().equals(cState.name())) {
+//                this.currState1 = cState;
+//                break;
+//            }
+//        }
+//
+//        //Bellman Equation to update Q-table
+//        double update = reward + gamma * findMaxQState(this.currState1.value) - qTable[this.prevState1.value][this.prevAction];
+//        qTable[this.prevState1.value][this.prevAction] = qTable[this.prevState1.value][this.prevAction] + alpha * update;
+//
+//        this.prevAction = this.currAction;
+//        this.prevState1 = this.currState1;
+//    }
+//
+//    /**
+//     *
+//     * @param state Sounds detected
+//     * @param currentAction maxValue action to be executed
+//     * @param reward
+//     */
+//    protected void updateQTable(SoundPerceptType state, int currentAction, float reward) {
+//        State[] allStates = State.class.getEnumConstants();
+//        if (this.prevState1 == null) {
+//            this.prevState1 = State.EmptySpace;
+//        }
+//
+//        this.currAction = currentAction;
+//
+//        for (State cState : allStates) {
+//            if (state.name().equals(cState.name())) {
+//                this.currState1 = cState;
+//                break;
+//            }
+//        }
+//
+//        //Bellman Equation to update Q-table
+//        double update = reward + gamma * findMaxQState(this.currState1.value) - qTable[this.prevState1.value][this.prevAction];
+//        qTable[this.prevState1.value][this.prevAction] = qTable[this.prevState1.value][this.prevAction] + alpha * update;
+//
+//        this.prevAction = this.currAction;
+//        this.prevState1 = this.currState1;
+//    }
+//
+//    /**
+//     *
+//     * @param state Objects in vision
+//     * @param currentAction maxValue action to be executed
+//     * @param reward
+//     */
+//    protected void updateQTable(ObjectPerceptType state, int currentAction, float reward) {
+//        State[] allStates = State.class.getEnumConstants();
+//        if (this.prevState1 == null) {
+//            this.prevState1 = State.EmptySpace;
+//        }
+//
+//        this.currAction = currentAction;
+//
+//        for (State cState : allStates) {
+//            if (state.name().equals(cState.name())) {
+//                this.currState1 = cState;
+//                break;
+//            }
+//        }
+//
+//        //Bellman Equation to update Q-table
+//        double update = reward + gamma * findMaxQState(this.currState1.value) - qTable[this.prevState1.value][this.prevAction];
+//        qTable[this.prevState1.value][this.prevAction] = qTable[this.prevState1.value][this.prevAction] + alpha * update;
+//
+//        this.prevAction = this.currAction;
+//        this.prevState1 = this.currState1;
+//
+//        // For printing the Q-table
+////        for (int i = 0; i < numStates; i++) {
+////            for (int j = 0; j < numActions; j++) {
+////                System.out.print("" + qTable[i][j] + ",");
+////            }
+////            System.out.println();
+////        }
+////        System.out.println();
+//    }
+    
+    /**
+     *
+     * @param visionState Objects in vision
+     * @param soundState Sounds detected
+     * @param currentAction maxValue action to be executed
+     * @param reward
+     */
+    protected void updateQTable(ObjectPerceptType visionState, SoundPerceptType soundState, int currentAction, float reward) {
+        State[] allStates = State.class.getEnumConstants();
+        if (this.prevState1 == null && this.prevState2 == null) {
+            this.prevState1 = State.EmptySpace;
+            this.prevState2 = State.EmptySpace;
+        }
+        else if (this.prevState1 == null && this.prevState2 != null){
+            this.prevState1 = State.EmptySpace;
+        }
+        else if (this.prevState1 != null && this.prevState2 == null){
+            this.prevState2 = State.EmptySpace;
+        }
+        
+        this.currAction = currentAction;
+        
+        for (State cState : allStates) {
+            if (visionState.name().equals(cState.name())) {
+                this.currState1 = cState;
+            }
+            if (soundState.name().equals(cState.name())){
+                this.currState2 = cState;
+            }
+        }
+        
+        //Bellman Equation to update Q-table
+        double update = reward + gamma * findMaxQState(this.currState1.value, this.currState2.value) - qTable[this.prevState1.value][this.prevState2.value][this.prevAction];
+        qTable[this.prevState1.value][this.prevState2.value][this.prevAction] = qTable[this.prevState1.value][this.prevState2.value][this.prevAction] + alpha * update;
+        
+        this.prevAction = this.currAction;
+        this.prevState1 = this.currState1;
+        this.prevState2 = this.currState2;
+    }
+    
+    /**
+     *
+     * @param visionState1, visionState2 Objects in vision
+     * @param currentAction maxValue action to be executed
+     * @param reward
+     */
+    protected void updateQTable(ObjectPerceptType visionState1, ObjectPerceptType visionState2, int currentAction, float reward) {
+        State[] allStates = State.class.getEnumConstants();
+        if (this.prevState1 == null && this.prevState2 == null) {
+            this.prevState1 = State.EmptySpace;
+            this.prevState2 = State.EmptySpace;
+        }
+        else if (this.prevState1 == null && this.prevState2 != null){
+            this.prevState1 = State.EmptySpace;
+        }
+        else if (this.prevState1 != null && this.prevState2 == null){
+            this.prevState2 = State.EmptySpace;
+        }
+        
+        this.currAction = currentAction;
+        
+        for (State cState : allStates) {
+            if (visionState1.name().equals(cState.name())) {
+                this.currState1 = cState;
+            }
+            if (visionState2.name().equals(cState.name())){
+                this.currState2 = cState;
+            }
+        }
+        
+        //Bellman Equation to update Q-table
+        double update = reward + gamma * findMaxQState(this.currState1.value, this.currState2.value) - qTable[this.prevState1.value][this.prevState2.value][this.prevAction];
+        qTable[this.prevState1.value][this.prevState2.value][this.prevAction] = qTable[this.prevState1.value][this.prevState2.value][this.prevAction] + alpha * update;
+        
+        this.prevAction = this.currAction;
+        this.prevState1 = this.currState1;
+        this.prevState2 = this.currState2;
+    }
+    
+    protected double [][][] getQTable(){
         return this.qTable;
     }
     
-    private double findMaxQState(int stateIndex) {
+//    private double findMaxQState(int stateIndex) {
+//
+//        double[] qTablePart = qTable[stateIndex];
+//        int max = getMaxValue(qTablePart);
+//        double maxValue = qTablePart[max];
+//        return maxValue;
+//    }
+    
+    private double findMaxQState(int stateIndex1, int stateIndex2) {
         
-        double[] qTablePart = qTable[stateIndex];
+        double[] qTablePart = qTable[stateIndex1][stateIndex2];
         int max = getMaxValue(qTablePart);
         double maxValue = qTablePart[max];
         return maxValue;
@@ -313,21 +468,89 @@ public class QLearning {
         return max;
     }
     
+//    /**
+//     * @param qTablePart [3D table]
+//     *         whole qTable as input
+//     * @return the index of the max value of the part of the Qtable that references the current state
+//     */
+//    private int [] getMaxValue(double[][] qTablePart) {
+//        int max = 0;
+//        double maxValue = qTablePart[0][0];
+//        for (int i = 0; i < qTablePart.length; i++) {
+//            for (j = 0; j < qTablePart[i].length; j++){
+//                if (qTablePart[i][j] > maxValue) {
+//                    max = j;
+//                }
+//            }
+//        }
+//        return max;
+//    }
+//
+//    /**
+//     * Writing the Q-Table to a file locally
+//     */
+//    protected void writeTableToFile(){
+//        StringBuilder builder = new StringBuilder();
+//        for(int i = 0; i < numStates; i++){
+//            for(int j = 0; j < numActions; j++){
+//                builder.append(qTable[i][j]+"");
+//                if(j < numActions - 1)
+//                    builder.append(" ");
+//            }
+//            builder.append("\n");
+//        }
+//        try {
+//            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/java/Group5/QTable.txt"));
+//            writer.write(builder.toString());
+//            writer.close();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    /**
+//     * Reading the Q-table from a file locally
+//     */
+//    private double[][] readTableFromFile() {
+//        try {
+//            Scanner sc = new Scanner(new BufferedReader(new FileReader("src/main/java/Group5/QTable.txt")));
+//            double [][] initialTable = new double[this.numStates][this.numActions];
+//            while(sc.hasNextLine()) {
+//                for (int i=0; i<initialTable.length; i++) {
+//                    String[] line = sc.nextLine().trim().split(" ");
+//                    for (int j=0; j<line.length; j++) {
+//                        initialTable[i][j] = Double.parseDouble(line[j]);
+//                    }
+//                }
+//            }
+//            return initialTable;
+//        }
+//        catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+    
     /**
      * Writing the Q-Table to a file locally
      */
-    protected void writeTableToFile(){
+    protected void writeTableToFile3D(){
         StringBuilder builder = new StringBuilder();
         for(int i = 0; i < numStates; i++){
-            for(int j = 0; j < numActions; j++){
-                builder.append(qTable[i][j]+"");
-                if(j < numActions - 1)
-                    builder.append(" ");
+            for(int j = 0; j < numStates; j++){
+                for (int k = 0; k < numActions; k++){
+                    builder.append(qTable[i][j][k]+"");
+                    if(k < numActions - 1)
+                        builder.append(" ");
+                }
+                builder.append("\n");
             }
             builder.append("\n");
         }
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/java/Group5/QTable.txt"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/java/Group5/QTable3D.txt"));
             writer.write(builder.toString());
             writer.close();
         } catch (IOException e) {
@@ -339,15 +562,20 @@ public class QLearning {
     /**
      * Reading the Q-table from a file locally
      */
-    private double[][] readTableFromFile() {
+    private double[][][] readTableFromFile3D() {
         try {
-            Scanner sc = new Scanner(new BufferedReader(new FileReader("src/main/java/Group5/QTable.txt")));
-            double [][] initialTable = new double[this.numStates][this.numActions];
-            while(sc.hasNextLine()) {
-                for (int i=0; i<initialTable.length; i++) {
-                    String[] line = sc.nextLine().trim().split(" ");
-                    for (int j=0; j<line.length; j++) {
-                        initialTable[i][j] = Double.parseDouble(line[j]);
+            Scanner sc = new Scanner(new BufferedReader(new FileReader("src/main/java/Group5/QTable3D.txt")));
+            double [][][] initialTable = new double[this.numStates][this.numStates][this.numActions];
+            for (int i = 0; i < initialTable.length; i++) {
+                for (int j = 0; j < initialTable[i].length; j++) {
+                    while (sc.hasNextLine()) {
+                        String[] lines = sc.nextLine().trim().split(" ");
+                        for (int k = 0; k < lines.length; k++) {
+                            String line = lines[k];
+                            if (!lines[k].isEmpty()) {
+                                initialTable[i][j][k] = Double.parseDouble(line);  //This will fill in the array
+                            }
+                        }
                     }
                 }
             }
