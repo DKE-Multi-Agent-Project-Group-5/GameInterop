@@ -15,6 +15,7 @@ import Interop.Percept.Scenario.ScenarioPercepts;
 import Interop.Percept.Scenario.SlowDownModifiers;
 import Interop.Percept.Smell.SmellPercept;
 import Interop.Percept.Smell.SmellPerceptType;
+import Interop.Percept.Smell.SmellPercepts;
 import Interop.Percept.Sound.SoundPercept;
 import Interop.Percept.Sound.SoundPerceptType;
 import Interop.Percept.Sound.SoundPercepts;
@@ -40,6 +41,7 @@ public class GuardExplorer implements Guard {
     private int lastTimeSawIntruder;
     private int droppedPheromone;
     private int movedSomewhere;
+    private ArrayList<DropPheromone> myPheromone;
 
     @Override
     public GuardAction getAction(GuardPercepts percepts) {
@@ -48,7 +50,6 @@ public class GuardExplorer implements Guard {
 //        if (!percepts.wasLastActionExecuted()){
 //            actionQueue.clear();
 //        }
-
         if (actionQueue.size()<=0)
             explore(percepts);
 
@@ -89,6 +90,7 @@ public class GuardExplorer implements Guard {
                     if (rotateValue > maxRotationAngle.getDegrees()) {
                         actionQueue.add(new Rotate(maxRotationAngle));
                         rotateValue -= maxRotationAngle.getDegrees();
+
                     }else {
                         actionQueue.add(new Rotate(Angle.fromDegrees(rotateValue)));
                         rotateValue = 0;
@@ -134,7 +136,6 @@ public class GuardExplorer implements Guard {
         ArrayList<SoundPerceptType> soundPerceptTypes = new ArrayList<>();
 
         percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle();
-
         for (ObjectPercept e : vision){
             visionPerceptTypes.add(e.getType());
         }
@@ -159,6 +160,7 @@ public class GuardExplorer implements Guard {
             followIntruder(percepts,vision);
             return;
         }
+
         if (soundPerceptTypes.contains(SoundPerceptType.Yell)&&Math.random()<=0.95){
             rotateToYell(percepts);
             return;
@@ -171,7 +173,8 @@ public class GuardExplorer implements Guard {
         }
 
         //higher probability to check sound when it saw an intruder recently
-        if ((soundPerceptTypes.size()>0&&Math.random()<=0.2)||(soundPerceptTypes.size()>0&&lastTimeSawIntruder>0&&Math.random()<=0.5)){
+        if ((soundPerceptTypes.size()>0 && Math.random()<=0.2) ||
+                (soundPerceptTypes.size()>0 && lastTimeSawIntruder>0&&Math.random()<=0.5)){
             rotateToNoise(percepts);
 //            System.out.println("check");
             return;
@@ -181,8 +184,6 @@ public class GuardExplorer implements Guard {
             goToSomewhere(percepts,vision,ObjectPerceptType.Teleport);
             return;
         }
-
-
 
         if (visionPerceptTypes.contains(ObjectPerceptType.Door)) {
             goToSomewhere(percepts,vision, ObjectPerceptType.Door);
@@ -194,12 +195,10 @@ public class GuardExplorer implements Guard {
             return;
         }
 
-
-
         if (lastTimeSawIntruder>0){
             //System.out.println("remembered intruder");
             //System.out.println(lastDirectionIntruder.getDegrees());
-            percepts.getVision().getFieldOfView();
+            //percepts.getVision().getFieldOfView();
             if (!rotateToIntruder){
                 addActionToQueue(new Rotate(lastDirectionIntruder),percepts);
                 rotateToIntruder = true;
@@ -236,10 +235,10 @@ public class GuardExplorer implements Guard {
             return;
         }
 
-/*
+
         Set<SmellPercept> pheromone1 =  smellPheromone(percepts, SmellPerceptType.Pheromone1);
         if (!pheromone1.isEmpty()) {
-            System.out.println("leave epxlored zone ");
+            System.out.println("leave explored zone ");
             GuardAction action = leaveExploredZone(percepts);
             if (action != null) {
                 addActionToQueue(action, percepts);
@@ -247,7 +246,7 @@ public class GuardExplorer implements Guard {
             }
         }
 
- */
+
 
         addActionToQueue(new Move(new Distance(percepts.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue() * getSpeedModifier(percepts))), percepts);
         return;
@@ -441,7 +440,7 @@ public class GuardExplorer implements Guard {
         //System.out.println(intruderMovement.getDegrees());
         lastDistanceToIntruder = new Distance(distanceToIntruder);
 
-        lastTimeSawIntruder = 60;
+        lastTimeSawIntruder = 0;
 
         if (Math.abs(angleToIntruder / count) > 15) {
             if (Math.random() < 0.2) {
@@ -627,9 +626,12 @@ public class GuardExplorer implements Guard {
      * Drop pheromone if does no hear sound, does not smell another pheromone and does not see intruder
      * @param p
      */
-    private void dropPheromone(GuardPercepts p, SmellPerceptType type) {
+    protected void dropPheromone(GuardPercepts p, SmellPerceptType type) {
         //if (!hearSound(p) && smellPheromone(p) != null && seeIntruder(p, p.getVision().getObjects().getAll())==null)
-            addActionToQueue(new DropPheromone(type), p);
+        DropPheromone action = new DropPheromone(type);
+        addActionToQueue(action, p);
+        myPheromone.add(action);
+
     }
 
     private boolean hearSound(GuardPercepts percepts) {
@@ -661,7 +663,6 @@ public class GuardExplorer implements Guard {
         return toReturn;
     }
 
-
     /**
      * If smells a pheromone where he wanted to go, he changes directions
      */
@@ -669,12 +670,15 @@ public class GuardExplorer implements Guard {
         Set<SmellPercept> smell = smellPheromone(p);
         if (smell != null) {
             for (SmellPercept sp : smell)
-                if (sp.getType().toString().equals("Pheromone1"))
+                if (sp.getType().toString().equals("Pheromone1") && !myPheromone.contains(sp))
                     return new Rotate(Angle.fromRadians(Math.PI / 2));
         }
 
         return null;
     }
+
+    public int getDroppedPheromone(){ return droppedPheromone;}
+    public void setDroppedPheromone(int val){ droppedPheromone = val;}
 
 
 }
