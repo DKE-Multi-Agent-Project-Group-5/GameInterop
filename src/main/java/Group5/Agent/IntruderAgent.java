@@ -370,7 +370,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                     }
                 }
             }
-            intruderQL.writeTableToFile3D();
+            intruderQL.serializeQTable3D();
         }
     
         else if (this.visionState != null && this.soundState != null) {
@@ -487,7 +487,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                     }
                 }
             }
-            intruderQL.writeTableToFile3D();
+            intruderQL.serializeQTable3D();
         }
         
         // For some reason the Game Controller returns an empty list of objects in vision range,
@@ -507,129 +507,6 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                 actionQueue.add(sprintTowards(intruderPercepts));
             }
         }
-    
-//        if (intruderPercepts.wasLastActionExecuted() && this.soundState != null) {
-//            int maxValueAction = intruderQL.getMaxValueAction(this.soundState.getType());
-//            for (IntruderAgent.Actions currAction : IntruderAgent.Actions.class.getEnumConstants()) {
-//                if (currAction.value == maxValueAction) {
-//                    if (currAction.value == 0) {
-//                        actionQueue.add(rotateTowards(this.soundState.getDirection().getRadians()));
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 1) {
-//                        actionQueue.add(moveStraight(intruderPercepts));
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 2) {
-//                        actionQueue.add(doNothing());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 3) {
-//                        actionQueue.add(moveStraight(intruderPercepts));
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 4) {
-//                        actionQueue.add(randomRotate());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 5) {
-//                        actionQueue.add(randomWalk(intruderPercepts));
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 6) {
-//                        actionQueue.add(sprintTowards(intruderPercepts));
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 7) {
-//                        actionQueue.add(rotateRight());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    }else if(currAction.value == 8) {
-//                        actionQueue.add(rotateLeft());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-
-                        // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
-//                    } else if (currAction.value == 7) {
-//                        actionQueue.add(dropPheromone1());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 8) {
-//                        actionQueue.add(dropPheromone2());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 9) {
-//                        actionQueue.add(dropPheromone3());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 10) {
-//                        actionQueue.add(dropPheromone4());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 11) {
-//                        actionQueue.add(dropPheromone5());
-//                        float reward = getReward(this.soundState);
-//                        intruderQL.updateQTable(this.soundState.getType(), currAction.value, reward);
-//                    }
-//                }
-//            }
-//            intruderQL.writeTableToFile();
-//        }
-        
-        // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
-//        if (this.smellState != null) {
-//            int maxValueAction = intruderQL.getMaxValueAction(this.smellState.getType());
-//            for (IntruderAgent.Actions currAction : IntruderAgent.Actions.class.getEnumConstants()) {
-//                if (currAction.value == maxValueAction) {
-//                    if (currAction.value == 1) {
-//                        actionQueue.add(moveStraight(intruderPercepts));
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 2) {
-//                        actionQueue.add(doNothing());
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 3) {
-//                        actionQueue.add(moveStraight(intruderPercepts));
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 4) {
-//                        actionQueue.add(randomRotate());
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 5) {
-//                        actionQueue.add(randomWalk(intruderPercepts));
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 6) {
-//                        actionQueue.add(sprintTowards(intruderPercepts));
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 7) {
-//                        actionQueue.add(dropPheromone1());
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 8) {
-//                        actionQueue.add(dropPheromone2());
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 9) {
-//                        actionQueue.add(dropPheromone3());
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 10) {
-//                        actionQueue.add(dropPheromone4());
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    } else if (currAction.value == 11) {
-//                        actionQueue.add(dropPheromone5());
-//                        float reward = getReward(this.smellState);
-//                        intruderQL.updateQTable(this.smellState.getType(), currAction.value, reward);
-//                    }
-//                }
-//            }
-//            intruderQL.writeTableToFile();
-//        }
     }
     
     protected float getReward(ObjectPercept state, ObjectPercept state2) {
@@ -671,6 +548,13 @@ public class IntruderAgent implements Interop.Agent.Intruder {
     }
     
     protected float getReward(ObjectPercept state, SoundPercept state2) {
+        // The Map used for testing has the other end of a TeleportArea to be
+        // the actual TargetArea. Because of this, the Agent can never "see" the
+        // TargetArea, because it is instantly teleported there and wins the game.
+        // This means that the agent is not rewarded properly for the current map.
+        // Change the reward values for seeing a TeleportArea so that the agent is
+        // rewarded as if this is the TargetArea.
+        // NEEDS TO BE CHANGED IF THE MAP IS CHANGED!!!
         
         float reward = -1f;
         
@@ -696,14 +580,6 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                 reward = -1f;
             }
         }
-        // The Map used for testing has the other end of a TeleportArea to be
-        // the actual TargetArea. Because of this, the Agent can never "see" the
-        // TargetArea, because it is instantly teleported there and wins the game.
-        // This means that the agent is not rewarded properly for the current map.
-        // Change the reward values for seeing a TeleportArea so that the agent is
-        // rewarded as if this is the TargetArea.
-        // NEEDS TO BE CHANGED IF THE MAP IS CHANGED!!!
-        
         return reward;
     }
     
