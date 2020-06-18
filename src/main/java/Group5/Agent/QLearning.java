@@ -66,6 +66,7 @@ public class QLearning implements Serializable {
     private int numActions;
     private int numStates;
     private double[][][] qTable;
+    private int[][][] alphan;
     
     
     private Point agentPosition;
@@ -90,6 +91,7 @@ public class QLearning implements Serializable {
         this.numStates = numStates;
 //        this.qTable = new double[numStates][numStates][numActions];
         deserializeQTable3D();
+        deserializeAlphan();
         this.rn = new Random();
         this.actionQueue = new LinkedList<>();
     }
@@ -187,7 +189,11 @@ public class QLearning implements Serializable {
                 this.currState2 = cState;
             }
         }
-        
+
+        //Adaptive alpha
+        alphan[currState1.value][currState2.value][currentAction]++;
+        alpha = (float) (1/alphan[currState1.value][currState2.value][currentAction]);
+
         //Bellman Equation to update Q-table
         double update = reward + gamma * findMaxQState(this.currState1.value, this.currState2.value) - qTable[this.prevState1.value][this.prevState2.value][this.prevAction];
         qTable[this.prevState1.value][this.prevState2.value][this.prevAction] = qTable[this.prevState1.value][this.prevState2.value][this.prevAction] + alpha * update;
@@ -226,7 +232,11 @@ public class QLearning implements Serializable {
                 this.currState2 = cState;
             }
         }
-        
+
+        //Adaptive alpha
+        alphan[currState1.value][currState2.value][currentAction]++;
+        alpha = (float) (1/alphan[currState1.value][currState2.value][currentAction]);
+
         //Bellman Equation to update Q-table
         double update = reward + gamma * findMaxQState(this.currState1.value, this.currState2.value) - qTable[this.prevState1.value][this.prevState2.value][this.prevAction];
         qTable[this.prevState1.value][this.prevState2.value][this.prevAction] = qTable[this.prevState1.value][this.prevState2.value][this.prevAction] + alpha * update;
@@ -365,6 +375,40 @@ public class QLearning implements Serializable {
             System.out.println("QTable not found");
             c.printStackTrace();
             return;
+        }
+    }
+
+    /**
+     * Make the Alphan a serializable object
+     */
+    protected void serializeAlphan(){
+        try {
+            FileOutputStream fileOut =
+                    new FileOutputStream("src/main/java/Group5/Alphan.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(this.alphan);
+            out.close();
+            fileOut.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+    }
+
+    /**
+     * Deserialize the Alphan object
+     */
+    private void deserializeAlphan() {
+        try {
+            FileInputStream fileIn = new FileInputStream("src/main/java/Group5/Alphan.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            this.alphan = (int [][][]) in.readObject();
+            in.close();
+            fileIn.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+        } catch (ClassNotFoundException c) {
+            System.out.println("Alpha table not found");
+            c.printStackTrace();
         }
     }
 }

@@ -371,6 +371,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                 }
             }
             intruderQL.serializeQTable3D();
+            intruderQL.serializeAlphan();
         }
     
         else if (this.visionState != null && this.soundState != null) {
@@ -488,6 +489,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                 }
             }
             intruderQL.serializeQTable3D();
+            intruderQL.serializeAlphan();
         }
         
         // For some reason the Game Controller returns an empty list of objects in vision range,
