@@ -117,6 +117,9 @@ public class QLearning implements Serializable {
         int maxIndex = getMaxValue(qTablePart);
         double chance = Math.random();
         Random rand = new Random();
+
+        //update epsilon value
+        epsilon = (float) 1/Arrays.stream(alphan[stateIndex1][stateIndex2]).sum();
     
         // Perform random action if chance is smaller than epsilon value
         // Otherwise return maxValue action index from Q-table
@@ -149,7 +152,10 @@ public class QLearning implements Serializable {
         int maxIndex = getMaxValue(qTablePart);
         double chance = Math.random();
         Random rand = new Random();
-        
+
+        //update epsilon value
+        epsilon = (float) 1/Arrays.stream(alphan[stateIndex1][stateIndex2]).sum();
+
         // Perform random action if chance is smaller than epsilon value
         // Otherwise return maxValue action index from Q-table
         if (chance < epsilon) {
