@@ -1,8 +1,8 @@
 gameMode = 1
 height = 200
 width = 300
-numGuards = 5
-numIntruders = 10
+numGuards = 2
+numIntruders = 1
 captureDistance = 2
 winConditionIntruderRounds = 3
 maxRotationAngle = 45.0
