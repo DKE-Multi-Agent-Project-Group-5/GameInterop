@@ -119,8 +119,8 @@ public class QLearning implements Serializable {
         Random rand = new Random();
 
         //update epsilon value
-        epsilon = (float) 1/Arrays.stream(alphan[stateIndex1][stateIndex2]).sum();
-    
+        epsilon = (float) (1/(1+Arrays.stream(alphan[stateIndex1][stateIndex2]).sum()));
+
         // Perform random action if chance is smaller than epsilon value
         // Otherwise return maxValue action index from Q-table
         if (chance < epsilon) {
@@ -154,7 +154,7 @@ public class QLearning implements Serializable {
         Random rand = new Random();
 
         //update epsilon value
-        epsilon = (float) 1/Arrays.stream(alphan[stateIndex1][stateIndex2]).sum();
+        epsilon = (float) (1.0/(1+Math.log(1+Arrays.stream(alphan[stateIndex1][stateIndex2]).sum())));
 
         // Perform random action if chance is smaller than epsilon value
         // Otherwise return maxValue action index from Q-table
@@ -198,7 +198,7 @@ public class QLearning implements Serializable {
 
         //Adaptive alpha
         alphan[currState1.value][currState2.value][currentAction]++;
-        alpha = (float) (1/alphan[currState1.value][currState2.value][currentAction]);
+        alpha = (float) (1/Math.log(1+alphan[currState1.value][currState2.value][currentAction]));
 
         //Bellman Equation to update Q-table
         double update = reward + gamma * findMaxQState(this.currState1.value, this.currState2.value) - qTable[this.prevState1.value][this.prevState2.value][this.prevAction];
@@ -241,7 +241,7 @@ public class QLearning implements Serializable {
 
         //Adaptive alpha
         alphan[currState1.value][currState2.value][currentAction]++;
-        alpha = (float) (1/alphan[currState1.value][currState2.value][currentAction]);
+        alpha = (float) (1/Math.log(1+alphan[currState1.value][currState2.value][currentAction]));
 
         //Bellman Equation to update Q-table
         double update = reward + gamma * findMaxQState(this.currState1.value, this.currState2.value) - qTable[this.prevState1.value][this.prevState2.value][this.prevAction];
