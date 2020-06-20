@@ -186,7 +186,7 @@ public class QLearning implements Serializable {
         }
         
         this.currAction = currentAction;
-        
+
         for (State cState : allStates) {
             if (visionState.name().equals(cState.name())) {
                 this.currState1 = cState;
@@ -227,9 +227,9 @@ public class QLearning implements Serializable {
         else if (this.prevState1 != null && this.prevState2 == null){
             this.prevState2 = State.EmptySpace;
         }
-        
+
         this.currAction = currentAction;
-        
+
         for (State cState : allStates) {
             if (visionState1.name().equals(cState.name())) {
                 this.currState1 = cState;

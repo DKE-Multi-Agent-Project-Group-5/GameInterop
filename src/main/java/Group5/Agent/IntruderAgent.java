@@ -16,6 +16,7 @@ import Interop.Action.Rotate;
 import Interop.Action.Sprint;
 import Interop.Action.Yell;
 import Interop.Geometry.Angle;
+import Interop.Geometry.Direction;
 import Interop.Geometry.Distance;
 import Interop.Geometry.Point;
 import Interop.Percept.GuardPercepts;
@@ -52,7 +53,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
 //    private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 17;
     
     // Constants for scenario with one Intruder
-    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 12;
+    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 14;
     private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 12;
     
     // Parameters for Q-learning
@@ -84,8 +85,11 @@ public class IntruderAgent implements Interop.Agent.Intruder {
         RotateLeft(8),
         MoveToArea(9),
         RotateRight20(10),
-        RotateLeft20(11);
-        
+        RotateLeft20(11),
+        RotateAway(12),
+        RotateAwaySound(13),
+        RotateParallelToWall(14);
+
         // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
 //        DropPheromone1(7),
 //        DropPheromone2(8),
@@ -153,13 +157,49 @@ public class IntruderAgent implements Interop.Agent.Intruder {
     protected Rotate rotateLeft() {
         return new Rotate(Angle.fromDegrees(-45));
     }
-    
+
     protected Rotate rotateRight20() {
         return new Rotate(Angle.fromDegrees(20));
     }
-    
+
     protected Rotate rotateLeft20() {
         return new Rotate(Angle.fromDegrees(-20));
+    }
+
+    protected Rotate rotateAway(Point point) {
+        return new Rotate(Angle.fromRadians(Math.PI+point.getClockDirection().getRadians()));
+    }
+    protected Rotate rotateAwaySound(Direction direction) {
+        return new Rotate(Angle.fromRadians(Math.PI+direction.getRadians()));
+    }
+    protected Rotate rotateParallelToWall(IntruderPercepts intruderPercepts){
+        Set<ObjectPercept> vision = intruderPercepts.getVision().getObjects().getAll();
+        if (!intruderPercepts.wasLastActionExecuted() && vision.size() > 0) {
+            double angleToWallsDegrees = 0;
+            int count = 0;
+            for (ObjectPercept e : vision) {
+                //prevents to turn away from a intruder
+                if (!(e.getType() == ObjectPerceptType.Intruder)) {
+                    if (Angle.fromDegrees(0).getDistance(e.getPoint().getClockDirection()).getDegrees() > 180) {
+                        angleToWallsDegrees = angleToWallsDegrees + e.getPoint().getClockDirection().getDegrees() - 360;
+                    } else {
+                        angleToWallsDegrees = angleToWallsDegrees + Angle.fromDegrees(0).getDistance(e.getPoint().getClockDirection()).getDegrees();
+                    }
+                    count++;
+
+                }
+            }
+            if (angleToWallsDegrees != 0) {
+                return new Rotate(Angle.fromDegrees(angleToWallsDegrees / count));
+            }
+        }
+
+        if (!intruderPercepts.wasLastActionExecuted()) {
+
+            Angle randomAngle = Angle.fromDegrees(intruderPercepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees() * Math.random());
+            return new Rotate(randomAngle);
+        }
+        return new Rotate(Angle.fromRadians(0));
     }
     // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
 //    protected DropPheromone dropPheromone1() {
@@ -389,6 +429,24 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
                         intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
+                    } else if(currAction.value == 12) {
+                        actionQueue.add(rotateAway(this.visionState.getPoint()));
+                        float reward = getReward(this.visionState, this.visionState2);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
+                        intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
+                    } else if(currAction.value == 13) {
+                        actionQueue.add(doNothing());
+                        float reward = getReward(this.visionState, this.visionState2);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
+                        intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
+                    } else if(currAction.value ==14) {
+                        actionQueue.add(rotateParallelToWall(intruderPercepts));
+                        float reward = getReward(this.visionState, this.visionState2);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
+                        intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
                     }
                 }
             }
@@ -515,6 +573,24 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
                     } else if (currAction.value == 11) {
                         actionQueue.add(rotateRight20());
+                        float reward = getReward(this.visionState, this.soundState);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.soundState);
+                        intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
+                    } else if(currAction.value == 12) {
+                        actionQueue.add(rotateAway(this.visionState.getPoint()));
+                        float reward = getReward(this.visionState, this.soundState);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.soundState);
+                        intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
+                    } else if(currAction.value == 13) {
+                        actionQueue.add(rotateAwaySound(soundState.getDirection()));
+                        float reward = getReward(this.visionState, this.soundState);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.soundState);
+                        intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
+                    } else if(currAction.value ==14) {
+                        actionQueue.add(rotateParallelToWall(intruderPercepts));
                         float reward = getReward(this.visionState, this.soundState);
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.soundState);
