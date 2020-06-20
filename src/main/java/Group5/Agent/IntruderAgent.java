@@ -52,7 +52,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
 //    private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 17;
     
     // Constants for scenario with one Intruder
-    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 7;
+    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 12;
     private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 12;
     
     // Parameters for Q-learning
@@ -82,7 +82,9 @@ public class IntruderAgent implements Interop.Agent.Intruder {
         Sprint(6),
         RotateRight(7),
         RotateLeft(8),
-        MoveToArea(9);
+        MoveToArea(9),
+        RotateRight20(10),
+        RotateLeft20(11);
         
         // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
 //        DropPheromone1(7),
@@ -150,6 +152,14 @@ public class IntruderAgent implements Interop.Agent.Intruder {
 
     protected Rotate rotateLeft() {
         return new Rotate(Angle.fromDegrees(-45));
+    }
+    
+    protected Rotate rotateRight20() {
+        return new Rotate(Angle.fromDegrees(20));
+    }
+    
+    protected Rotate rotateLeft20() {
+        return new Rotate(Angle.fromDegrees(-20));
     }
     // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
 //    protected DropPheromone dropPheromone1() {
@@ -315,7 +325,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
                         intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
-                    }else if (currAction.value == 9) {
+                    } else if (currAction.value == 9) {
                         if (visionState.getType() == ObjectPerceptType.Door || visionState.getType() == ObjectPerceptType.Window) {
                             if (Math.abs(visionState.getPoint().getClockDirection().getDegrees()) < 10) {
                                 actionQueue.add(walkTowards(visionState.getPoint()));
@@ -367,6 +377,18 @@ public class IntruderAgent implements Interop.Agent.Intruder {
 //                        this.seenObjects.add(Arrays.asList(round(this.visionState.getPoint().getX(), 2),
 //                                round(this.visionState.getPoint().getY(), 2)));
 //                        intruderQL.updateQTable(this.visionState.getType(), currAction.value, reward);
+                    } else if (currAction.value == 10) {
+                        actionQueue.add(rotateRight20());
+                        float reward = getReward(this.visionState, this.visionState2);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
+                        intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
+                    } else if (currAction.value == 11) {
+                        actionQueue.add(rotateLeft20());
+                        float reward = getReward(this.visionState, this.visionState2);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
+                        intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
                     }
                 }
             }
@@ -433,7 +455,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.soundState);
                         intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
-                    }else if (currAction.value == 9) {
+                    } else if (currAction.value == 9) {
                         if (visionState.getType() == ObjectPerceptType.Door || visionState.getType() == ObjectPerceptType.Window) {
                             if (Math.abs(visionState.getPoint().getClockDirection().getDegrees()) < 10) {
                                 actionQueue.add(walkTowards(visionState.getPoint()));
@@ -485,6 +507,18 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         //                        this.seenObjects.add(Arrays.asList(round(this.visionState.getPoint().getX(), 2),
                         //                                round(this.visionState.getPoint().getY(), 2)));
                         //                        intruderQL.updateQTable(this.visionState.getType(), currAction.value, reward);
+                    } else if (currAction.value == 10) {
+                        actionQueue.add(rotateLeft20());
+                        float reward = getReward(this.visionState, this.soundState);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.soundState);
+                        intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
+                    } else if (currAction.value == 11) {
+                        actionQueue.add(rotateRight20());
+                        float reward = getReward(this.visionState, this.soundState);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.soundState);
+                        intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
                     }
                 }
             }
@@ -565,7 +599,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
             return reward;
         } else if (state.getType() == ObjectPerceptType.Guard || state2.getType() == SoundPerceptType.Yell
         || state2.getType() == SoundPerceptType.Noise) {
-            reward = -1.2f;
+            reward = -3f;
             return reward;
         } else if (state.getType() == ObjectPerceptType.Intruder) {
             reward = -1f;
