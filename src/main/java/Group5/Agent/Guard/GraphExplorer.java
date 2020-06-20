@@ -74,8 +74,7 @@ public class GraphExplorer extends GuardExplorer {
         weightMap.put(ObjectPerceptType.Teleport, 5);
         weightMap.put(ObjectPerceptType.ShadedArea, 1);
         weightMap.put(ObjectPerceptType.EmptySpace, 1);
-        weightMap.put(ObjectPerceptType.Intruder, 100);
-        clearQueue = true;
+        weightMap.put(ObjectPerceptType.Intruder, 15);
 
     }
 
@@ -301,62 +300,17 @@ public class GraphExplorer extends GuardExplorer {
         updateNodeIdleness();
 
         boolean switchOffGuardMode = true;
-        ArrayList<ObjectPerceptType> visionPerceptTypes = new ArrayList<>();
-        Set<ObjectPercept> vision = percepts.getVision().getObjects().getAll();
-        for (ObjectPercept e : vision) {
-            visionPerceptTypes.add(e.getType());
-        }
-
-        if(visionPerceptTypes.contains(ObjectPerceptType.Door) ||visionPerceptTypes.contains(ObjectPerceptType.Window)){
+        for(ObjectPercept o: percepts.getVision().getObjects().getAll()) {
+            if(o.getType()==ObjectPerceptType.Door || o.getType()==ObjectPerceptType.Window)  switchOffGuardMode = false;
+            else if(o.getType() == ObjectPerceptType.Intruder || o.getType()==ObjectPerceptType.SentryTower){
                 switchOffGuardMode = false;
-                if (clearQueue){
-                    actionQueue.clear();
-                }
-                clearQueue = false;
-        }
-        else if(visionPerceptTypes.contains(ObjectPerceptType.Intruder)){
-//                switchOffGuardMode = false;
-                if (clearQueue){
-                    actionQueue.clear();
-                }
-                clearQueue = false;
-                super.followIntruder(percepts,percepts.getVision().getObjects().getAll());
-                if (!percepts.wasLastActionExecuted()){
-//                    System.out.println("fail");
-                }else{
-//                    System.out.println("pass");
-                }
-//                System.out.println("Switching to guard mode to go to interesting object.");
-//                this.mode = "guard";
-            }
-        else if (super.getLastTimeSawIntruder()>0){
-                stayInNode = true;
-//                System.out.println("entered last time saw intruder");
-//                super.reduceLastTimeSawIntruder();
-
-            }
-        else if(visionPerceptTypes.contains(ObjectPerceptType.SentryTower)){
-            if(clearQueue){
-                actionQueue.clear();
+                System.out.println("Switching to guard mode to go to interesting object.");
+                this.mode = "guard";
             }
             clearQueue = false;
             this.mode = "guard";
         }
-        else if(!percepts.getSounds().getAll().isEmpty()){
-            this.mode = "guard";
-            switchOffGuardMode = false;
-        }
-
-        else if(super.getLastTimeSawIntruder()==0){
-//            System.out.println("remove counter for intruder");
-            stayInNode = false;
-        }
-
-        if(super.getLastTimeSawIntruder()==1){
-//            System.out.println("remove counter for intruder");
-        }
-
-        if (switchOffGuardMode && this.mode.equals("guard")) {
+        if (this.guardTargetNode != null && switchOffGuardMode && this.mode.equals("guard")) {
             this.mode = "graph";
             clearQueue = true;
 //            System.out.println("Switching off guard mode");

@@ -111,10 +111,6 @@ public class GuardExplorer implements Guard {
 
     }
 
-    public int getLastTimeSawIntruder() {
-        return lastTimeSawIntruder;
-    }
-
     public void explore(GuardPercepts percepts) {
 //        System.out.println("calling explorer");
         Set<ObjectPercept> vision = percepts.getVision().getObjects().getAll();
@@ -311,7 +307,7 @@ public class GuardExplorer implements Guard {
 
         lastDistanceToIntruder = new Distance(distanceToIntruder);
 
-        lastTimeSawIntruder = 30;
+        lastTimeSawIntruder = 0;
 
         if (Math.abs(angleToIntruder / count) > 15) {
             if (Math.random() < 0.2) {
