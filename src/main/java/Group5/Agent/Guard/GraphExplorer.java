@@ -307,8 +307,6 @@ public class GraphExplorer extends GuardExplorer {
                 System.out.println("Switching to guard mode to go to interesting object.");
                 this.mode = "guard";
             }
-            clearQueue = false;
-            this.mode = "guard";
         }
         if (this.guardTargetNode != null && switchOffGuardMode && this.mode.equals("guard")) {
             this.mode = "graph";
