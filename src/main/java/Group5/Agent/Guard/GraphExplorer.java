@@ -1,7 +1,6 @@
 package Group5.Agent.Guard;
 
 import Group9.Game;
-import Group9.map.GameSettings;
 import Interop.Action.DropPheromone;
 import Interop.Action.GuardAction;
 import Interop.Action.Move;
@@ -11,14 +10,12 @@ import Interop.Geometry.Distance;
 import Interop.Geometry.Point;
 import Interop.Percept.GuardPercepts;
 import Interop.Percept.Scenario.SlowDownModifiers;
-import Interop.Percept.Smell.SmellPercept;
 import Interop.Percept.Smell.SmellPerceptType;
-import Interop.Percept.Smell.SmellPercepts;
-import Interop.Percept.Sound.SoundPercept;
 import Interop.Percept.Vision.ObjectPercept;
 import Interop.Percept.Vision.ObjectPerceptType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GraphExplorer extends GuardExplorer {
 
@@ -37,36 +34,21 @@ public class GraphExplorer extends GuardExplorer {
     private Node guardTargetNode;
     private boolean keepGoing;
 
-    private boolean clearQueue;
-
     private HashMap<ObjectPerceptType, Integer> weightMap;
-
-    private HashMap<Point,Integer> myPheromone;
-    private ArrayList<SmellPercept> smelledPheromone;
-
-
-
 
     //saves the nextNode that will be visited by the exploration algorithm
     //if it cannot be reached remove this node from the list
     private Node nextNode;
 
-    private boolean stayInNode;
-
-    private int maxWallsOntheWay;
-
     public GraphExplorer() {
         position = new Point(0, 0);
         nodes = new ArrayList<>();
         angle = Angle.fromDegrees(0);
-        radius = 5;
+        radius = 30;
         currentTime = 0;
         epsilon = 0.5;
-        maxWallsOntheWay = 10;
         mode = "graph";
         weightMap = new HashMap<>();
-        myPheromone = new HashMap<>();
-        smelledPheromone = new ArrayList<>();
         weightMap.put(ObjectPerceptType.Wall, 2);
         weightMap.put(ObjectPerceptType.Window, 5);
         weightMap.put(ObjectPerceptType.Door, 5);
@@ -74,7 +56,7 @@ public class GraphExplorer extends GuardExplorer {
         weightMap.put(ObjectPerceptType.Teleport, 5);
         weightMap.put(ObjectPerceptType.ShadedArea, 1);
         weightMap.put(ObjectPerceptType.EmptySpace, 1);
-        weightMap.put(ObjectPerceptType.Intruder, 15);
+        weightMap.put(ObjectPerceptType.Intruder, 100);
 
     }
 
@@ -93,12 +75,12 @@ public class GraphExplorer extends GuardExplorer {
 
                 //create the adjacent nodes only if node was never visited before
                 if (previousNodeVisited.isNeverVisited()) {
-//                    //System.out.println("biem");
+//                    System.out.println("biem");
                     generateAdjacentNodes(previousNodeVisited);
                 }
                 nodes.get(i).visitNodeAgain(percepts, position, epsilon);
-//                //System.out.println(previousNodeVisited.getCenter().toString());
-//                //System.out.println(position.toString());
+//                System.out.println(previousNodeVisited.getCenter().toString());
+//                System.out.println(position.toString());
                 newNodeBoolean = false;
                 break;
             }
@@ -111,28 +93,28 @@ public class GraphExplorer extends GuardExplorer {
             }
         }
         if (allNodesVisited&&nodes.size()!=0){
-//            //System.out.println(nodes.size());
-            //System.out.println("ALL NODES ARE VISITED");
-            //System.out.println("NEW NODE CREATION HAS STOPPED");
+//            System.out.println(nodes.size());
+//            System.out.println("ALL NODES ARE VISITED");
+//            System.out.println("NEW NODE CREATION HAS STOPPED");
         }
 
 
-//        //System.out.println(nodes.size());
+//        System.out.println(nodes.size());
 
 
-        ////System.out.println(nodes.size());
+        //System.out.println(nodes.size());
         if (newNodeBoolean) {
             if (previousNodeVisited != null) {
                 Point centerOldNode = previousNodeVisited.getCenter();
-                //System.out.println("created new Area");
+//                System.out.println("created new Area");
 //                Node newNode = new Node(percepts, computeCenterNewNode(centerOldNode, percepts.getVision().getFieldOfView().getRange().getValue()));
                 Node newNode = new Node(percepts, computeCenterNewNode(centerOldNode, radius), this.position, radius);
                 generateAdjacentNodes(newNode);
                 previousNodeVisited = newNode;
                 nodes.add(newNode);
-//                //System.out.println(nodes.size());
+//                System.out.println(nodes.size());
             } else {
-                //System.out.println("created new Area");
+//                System.out.println("created new Area");
                 Node newNode = new Node(percepts, position, position, radius);
                 generateAdjacentNodes(newNode);
                 previousNodeVisited = newNode;
@@ -152,7 +134,7 @@ public class GraphExplorer extends GuardExplorer {
         Point oldCenter = currentNode.getCenter();
         Point newCenter;
 
-//        //System.out.println(oldCenter.toString());
+//        System.out.println(oldCenter.toString());
         for (double j = 0; j < 2; j += 0.25) {
             generateNode = true;
 
@@ -169,18 +151,18 @@ public class GraphExplorer extends GuardExplorer {
             for (Node node : nodes) {
                 if (Node.getDistance(node.getCenter(), newCenter) < radius - 1) {
                     generateNode = false;
-//                  //System.out.println("kak");
-//                  //System.out.println(Node.getDistance(node.getCenter(),newCenter));
+//                  System.out.println("kak");
+//                  System.out.println(Node.getDistance(node.getCenter(),newCenter));
                     break;
                 }
             }
 
             if (generateNode) {
                 newNode = new Node(newCenter, radius);
-//                //System.out.println(newNode.getCenter());
+//                System.out.println(newNode.getCenter());
                 nodes.add(newNode);
                 currentNode.addNeighbour(newNode);
-                //              //System.out.println(Node.getDistance(oldCenter,newNode.getCenter()));
+                //              System.out.println(Node.getDistance(oldCenter,newNode.getCenter()));
             }
         }
     }
@@ -230,7 +212,7 @@ public class GraphExplorer extends GuardExplorer {
         Point movement = new Point(move.getDistance().getValue() * Math.cos(angle.getRadians()), move.getDistance().getValue() * Math.sin(angle.getRadians()));
         position = new Point(position.getX() + movement.getX(), position.getY() + movement.getY());
 
-//        //System.out.println("Moving ..." + position.toString());
+//        System.out.println("Moving ..." + position.toString());
         return move;
     }
 
@@ -264,21 +246,6 @@ public class GraphExplorer extends GuardExplorer {
 //        if (!percepts.wasLastActionExecuted()){
 //            actionQueue.clear();
 //        }
-        for (Point pheromonePosition : myPheromone.keySet())
-        {
-            myPheromone.put(pheromonePosition,myPheromone.get(pheromonePosition)-1);
-            if(myPheromone.get(pheromonePosition)==0)
-                myPheromone.remove(pheromonePosition);
-        }
-        for(SmellPercept smelled : percepts.getSmells().getAll())
-        {
-            for ( Point p : myPheromone.keySet()){
-                if(getDistance(position,p)!=smelled.getDistance().getValue())
-                {
-                    smelledPheromone.add(smelled);
-                }
-            }
-        }
 
         GuardAction a = super.getAction(percepts);
         if (a instanceof Rotate) {
@@ -302,23 +269,26 @@ public class GraphExplorer extends GuardExplorer {
         boolean switchOffGuardMode = true;
         for(ObjectPercept o: percepts.getVision().getObjects().getAll()) {
             if(o.getType()==ObjectPerceptType.Door || o.getType()==ObjectPerceptType.Window)  switchOffGuardMode = false;
-            else if(o.getType() == ObjectPerceptType.Intruder || o.getType()==ObjectPerceptType.SentryTower){
+            else if(o.getType() == ObjectPerceptType.Intruder || o.getType()==ObjectPerceptType.SentryTower ||
+                    super.getLastTimeSawIntruder() > 0){
                 switchOffGuardMode = false;
-                System.out.println("Switching to guard mode to go to interesting object.");
+                actionQueue.clear();
+//                System.out.println("Switching to guard mode to go to interesting object.");
                 this.mode = "guard";
             }
         }
+        if(!percepts.getSounds().getAll().isEmpty()){
+            this.mode = "guard";
+            switchOffGuardMode = false;
+        }
         if (this.guardTargetNode != null && switchOffGuardMode && this.mode.equals("guard")) {
             this.mode = "graph";
-            clearQueue = true;
 //            System.out.println("Switching off guard mode");
-            keepGoing = false;
         }
 
         // TODO: account for the intruder
 
         if (this.mode.equals("guard")) {
-//            System.out.println("entering guard mode");
             super.explore(percepts);
 
         } else {
@@ -326,61 +296,40 @@ public class GraphExplorer extends GuardExplorer {
                 //addActionToQueue(new DropPheromone(SmellPerceptType.values()[(int) (Math.random() * SmellPerceptType.values().length)]), percepts);
                 dropPheromone(percepts, SmellPerceptType.Pheromone1);
                 setDroppedPheromone(500);
-                return;
-                //System.out.println("Random pheromone drop");
+//                System.out.println("Random pheromone drop");
             }
 
             if (!percepts.wasLastActionExecuted()) {
                 //cannot reach node so remove it from the map
                 removeUnreachableNode();
-                super.moveParallelToWall(percepts,percepts.getVision().getObjects().getAll());
-                return;
-//                addActionToQueue(new Rotate(Angle.fromRadians(percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * Game._RANDOM.nextDouble())), percepts);
+                addActionToQueue(new Rotate(Angle.fromRadians(percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * Game._RANDOM.nextDouble())), percepts);
 
             } else {
                 double maxMovementDistance = percepts.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue() * getSpeedModifier(percepts);
 //                for(Node n: nodes){
-//                    //System.out.println(n.getCenter());
+//                    System.out.println(n.getCenter());
 //                }
-                Node previousNode = previousNodeVisited;
                 Node nextNode = chooseNextNode();
-                if(previousNodeVisited!=null&&nextNode!=null){
-                    if(nextNode.equals(previousNode)){
-//                        System.out.println(nextNode.equals(previousNode));
-                    }
-//                    System.out.println(nextNode.equals(previousNode));
-                }
-//                System.out.println(nextNode == null);
+
                 if (nextNode != null) {
-//                    System.out.println("kak");
                     moveToNode(nextNode, percepts, maxMovementDistance);
-                    return;
                 }
-
-                for (SmellPercept sp : smelledPheromone)
-                    if (sp.getType().toString().equals("Pheromone1"))
-                        changeTarget();
-
-
                 if (percepts.getAreaPercepts().isInDoor() && getDroppedPheromone() == 0) {
-//                    System.out.println("door: drop pheromone type 2");
+//            System.out.println("door: drop pheromone type 2");
                     dropPheromone(percepts, SmellPerceptType.Pheromone2);
                     super.setDroppedPheromone(500);
-                    return;
                 }
 
                 if (percepts.getAreaPercepts().isInWindow() && getDroppedPheromone() == 0) {
-//            //System.out.println("window: drop pheromone type 2");
+//            System.out.println("window: drop pheromone type 2");
                     dropPheromone(percepts, SmellPerceptType.Pheromone2);
                     super.setDroppedPheromone(500);
-                    return;
                 }
 
                 if (percepts.getAreaPercepts().isJustTeleported() && getDroppedPheromone() == 0) {
-//            //System.out.println("teleported: drop pheromone type 2");
+//            System.out.println("teleported: drop pheromone type 2");
                     dropPheromone(percepts, SmellPerceptType.Pheromone2);
                     super.setDroppedPheromone(500);
-                    return;
                 }
 
             }
@@ -393,97 +342,27 @@ public class GraphExplorer extends GuardExplorer {
      * @return The next node to visit based on idleness
      */
     private Node chooseNextNode() {
-        if (stayInNode){
-            return previousNodeVisited;
-        }
         Node nextNode = null;
         double utility = 0;
-        if(previousNodeVisited!=null) {
-            for (Node n : previousNodeVisited.getNeighbours()) {
-                double distance = this.previousNodeVisited.getCenter().getDistance(n.getCenter()).getValue();
-//            if (distance < 2 * radius) {
-                if (distance > epsilon && n.getNodeIdleness() >= utility) {
-                    nextNode = n;
-                    utility = n.getNodeIdleness();
-                }
-//            }
-            }
-        }
-        this.nextNode = nextNode;
-        if (nextNode == null) return nextNode;
-        objectsOnTheWay wallsOnTheWay = getObjectsOnTheWay(nextNode, ObjectPerceptType.Wall);
-        objectsOnTheWay doorsOntheWay = getObjectsOnTheWay(nextNode, ObjectPerceptType.Door);
-        objectsOnTheWay windowsOntheWay = getObjectsOnTheWay(nextNode, ObjectPerceptType.Window);
-        if(wallsOnTheWay.perceptList.size() > maxWallsOntheWay && doorsOntheWay.perceptList.isEmpty() && windowsOntheWay.perceptList.isEmpty()){
-            removeUnreachableNode();
-            previousNodeVisited.getNeighbours().remove(nextNode);
-            return chooseNextNode();
-        }
-        else
-            return nextNode;
-    }
-
-    private void changeTarget() {
-        ArrayList<Node> neighbours = new ArrayList<>(previousNodeVisited.getNeighbours());
-        neighbours.remove(nextNode);
-
-        Node nextNode = null;
-        double utility = 0;
-        if(previousNodeVisited!=null) {
-            for (Node n : neighbours) {
-                if (n.getNodeIdleness() >= utility) {
+        for (Node n : this.nodes) {
+            double distance = this.previousNodeVisited.getCenter().getDistance(n.getCenter()).getValue();
+            if (distance < 2 * radius) {
+                if (distance > epsilon && n.getNodeIdleness() > utility) {
                     nextNode = n;
                     utility = n.getNodeIdleness();
                 }
             }
         }
         this.nextNode = nextNode;
-        if (nextNode == null) return;
-        objectsOnTheWay wallsOnTheWay = getObjectsOnTheWay(nextNode, ObjectPerceptType.Wall);
-        objectsOnTheWay doorsOntheWay = getObjectsOnTheWay(nextNode, ObjectPerceptType.Door);
-        objectsOnTheWay windowsOntheWay = getObjectsOnTheWay(nextNode, ObjectPerceptType.Window);
-
-        if(wallsOnTheWay.perceptList.size() > maxWallsOntheWay && doorsOntheWay.perceptList.isEmpty() && windowsOntheWay.perceptList.isEmpty()){
-            removeUnreachableNode();
-            previousNodeVisited.getNeighbours().remove(nextNode);
-            changeTarget();
-        }
-        else
-            return;
-
+        return nextNode;
     }
 
     private void removeUnreachableNode() {
-//        //System.out.println("biem");
-//        //System.out.println(nodes.size());
+//        System.out.println("biem");
+//        System.out.println(nodes.size());
         nodes.remove(nextNode);
-//        //System.out.println(nodes.size());
+//        System.out.println(nodes.size());
         nextNode = null;
-    }
-
-    private objectsOnTheWay getObjectsOnTheWay(Node node, ObjectPerceptType op){
-        HashMap<String, Angle[]> angleRanges = new HashMap<>();
-        angleRanges.put("right", new Angle[]{Angle.fromRadians(-Math.PI / 2), Angle.fromRadians(Math.PI / 2)});
-        angleRanges.put("top", new Angle[]{Angle.fromRadians(0), Angle.fromRadians(Math.PI)});
-        angleRanges.put("left", new Angle[]{Angle.fromRadians(Math.PI / 2), Angle.fromRadians(3 * Math.PI / 2)});
-        angleRanges.put("bottom", new Angle[]{Angle.fromRadians(Math.PI), Angle.fromRadians(2 * Math.PI)});
-
-        Angle angleBetweenCenters = vectorAngle(this.previousNodeVisited.getCenter(), node.getCenter());
-        Angle angleBetweenCentersFull = Angle.fromRadians((angleBetweenCenters.getRadians() + 2 * Math.PI) % (2 * Math.PI));
-        String directionKey = "";
-        if (angleBetweenCenters.getRadians() < 0.05) directionKey = "right";
-        else if (angleBetweenCenters.getRadians() - Math.PI / 2 < 0.05) directionKey = "top";
-        else if (angleBetweenCentersFull.getRadians() - Math.PI < 0.05) directionKey = "left";
-        else if (angleBetweenCentersFull.getRadians() + Math.PI / 2 < 0.05) directionKey = "bottom";
-
-        ArrayList<Point> perceptList = new ArrayList<>();
-        if (node.getObjectMap().keySet().contains(op)) {
-            for (Point p : node.getObjectMap().get(op)) {
-                if (doorOrWindowsOnTheWay(angleRanges, directionKey, p)) perceptList.add(p);
-            }
-        }
-
-        return new objectsOnTheWay(directionKey, angleRanges, perceptList);
     }
 
     /**
@@ -491,91 +370,87 @@ public class GraphExplorer extends GuardExplorer {
      *
      * @param node
      */
-
-    //TODO: check if smelling pheromone of type 2 when getting very close to the door and if so, turn around
-    private void moveToNode(Node node, GuardPercepts percepts, double maxMovementDistance) {
-        ////System.out.println("Moving to node");
+    private void moveToNode(Node node, GuardPercepts percepts, double maxMovementDistance) { //TODO: What about new nodes? I think it might break it, becauee there are no percepts stored yet.
+        //System.out.println("Moving to node");
         //check doors/windows
-
-
         if (node.getObjectMap().keySet().contains(ObjectPerceptType.Door) ||
-                node.getObjectMap().keySet().contains(ObjectPerceptType.Window)) {
-//            System.out.println("node contains door or window");
+                node.getObjectMap().keySet().contains(ObjectPerceptType.Window) || this.keepGoing) {
+            HashMap<String, Angle[]> angleRanges = new HashMap<>();
+            angleRanges.put("right", new Angle[]{Angle.fromRadians(-Math.PI / 2), Angle.fromRadians(Math.PI / 2)});
+            angleRanges.put("top", new Angle[]{Angle.fromRadians(0), Angle.fromRadians(Math.PI)});
+            angleRanges.put("left", new Angle[]{Angle.fromRadians(Math.PI / 2), Angle.fromRadians(3 * Math.PI / 2)});
+            angleRanges.put("bottom", new Angle[]{Angle.fromRadians(Math.PI), Angle.fromRadians(2 * Math.PI)});
 
-            objectsOnTheWay objectsOnTheWay = getObjectsOnTheWay(node, ObjectPerceptType.Door);
+            Angle angleBetweenCenters = vectorAngle(this.previousNodeVisited.getCenter(), node.getCenter());
+            Angle angleBetweenCentersFull = Angle.fromRadians((angleBetweenCenters.getRadians() + 2 * Math.PI) % (2 * Math.PI));
+            String directionKey = "";
+            if (angleBetweenCenters.getRadians() < 0.05) directionKey = "right";
+            else if (angleBetweenCenters.getRadians() - Math.PI / 2 < 0.05) directionKey = "top";
+            else if (angleBetweenCentersFull.getRadians() - Math.PI < 0.05) directionKey = "left";
+            else if (angleBetweenCentersFull.getRadians() + Math.PI / 2 < 0.05) directionKey = "bottom";
 
-            if (objectsOnTheWay.perceptList.isEmpty())
-                objectsOnTheWay = getObjectsOnTheWay(node, ObjectPerceptType.Window);
+            ArrayList<Point> doorList = new ArrayList<>();
+            if (node.getObjectMap().keySet().contains(ObjectPerceptType.Door)) {
+                for (Point p : node.getObjectMap().get(ObjectPerceptType.Door)) {
+                    if (doorOrWindowsOnTheWay(angleRanges, directionKey, p)) doorList.add(p);
+                }
+            }
+            if (doorList.isEmpty() && node.getObjectMap().keySet().contains(ObjectPerceptType.Window)) {
+                for (Point p : node.getObjectMap().get(ObjectPerceptType.Window)) {
+                    if (doorOrWindowsOnTheWay(angleRanges, directionKey, p)) doorList.add(p);
+                }
 
-
+            }
             Angle angleToPassable = Angle.fromRadians(0);
-            outerloop:
+            if (!doorList.isEmpty()) {
+                angleToPassable = this.getRelativeAngle(new Point(doorList.get(0).getX() - position.getX(),
+                        doorList.get(0).getY() - position.getY()), this.angle);
+//                System.out.println("Angle to door: " + angleToPassable.getDegrees());
+                if(angleToPassable.getRadians() > 0.05)
+                    addActionToQueue(new Rotate(angleToPassable), percepts);
+            }
+
             for (ObjectPercept o : percepts.getVision().getObjects().getAll()) {
                 Point q = new Point(o.getPoint().getX() + position.getX(), o.getPoint().getY() + position.getY());
-                if ((o.getType() == ObjectPerceptType.Door || o.getType() == ObjectPerceptType.Window) &&
-                        doorOrWindowsOnTheWay(objectsOnTheWay.angleRanges, objectsOnTheWay.directionKey, q)){
-                    //System.out.println("Switching to guard mode to go through door/window");
-                    for(SmellPercept pheromone : smelledPheromone)
-                    {
-
-                        if(pheromone.getType().equals(SmellPerceptType.Pheromone2))
-                        {
-                            addActionToQueue(new Rotate(Angle.fromRadians(Math.PI / 4)),percepts);
-                            break outerloop;
-                        }
-                    }
+                if (o.getType() == ObjectPerceptType.Door || o.getType() == ObjectPerceptType.Window &&
+                        doorOrWindowsOnTheWay(angleRanges, directionKey, q)){
+//                    System.out.println("Switching to guard mode to go through door/window");
                     this.mode = "guard";
                     this.guardTargetNode = node;
                     break;
                 }
             }
 
-            if (!this.mode.equals("guard")) {
-                if(objectsOnTheWay.perceptList.isEmpty()){
-                    //System.out.println("Moving");
+            if (!this.mode.equals("guard") && angleToPassable.getDegrees() < 0.5) {
+                if(doorList.isEmpty()){
+//                    System.out.println("Moving");
                     Angle angleToNextNode = getRelativeAngle(new Point(node.getCenter().getX() - this.position.getX(),
                             node.getCenter().getY() - this.position.getY()), this.angle);
                     if (angleToNextNode.getRadians() > 0.05)
                         addActionToQueue(new Rotate(angleToNextNode), percepts);
                 }
-                else
-                {
-
-                    angleToPassable = this.getRelativeAngle(new Point(objectsOnTheWay.perceptList.get(0).getX() - position.getX(),
-                            objectsOnTheWay.perceptList.get(0).getY() - position.getY()), this.angle);
-                    //System.out.println("Angle to door: " + angleToPassable.getDegrees());
-                    if(angleToPassable.getRadians() > 0.05)
-                        addActionToQueue(new Rotate(angleToPassable), percepts);
-
+                else {
+//                    System.out.println("Moving to door/window.");
                 }
-
                 this.keepGoing = true;
-                addActionToQueue(new Move(new Distance(percepts.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue() * getSpeedModifier(percepts))), percepts);
+                addActionToQueue(new Move(new Distance(1)), percepts);
             }
 
 
         }
 
+        //check walls or does Ionas do that already?
 
 
         else {
-//             //System.out.println("No doors. No Windows.");
+//             System.out.println("No doors. No Windows.");
             //determine direction
             Angle angleToNextNode = getRelativeAngle(new Point(node.getCenter().getX() - this.position.getX(),
                     node.getCenter().getY() - this.position.getY()), this.angle);
             if (angleToNextNode.getRadians() > 0.05)
                 addActionToQueue(new Rotate(angleToNextNode), percepts);
-            addActionToQueue(new Move(new Distance(percepts.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue() * getSpeedModifier(percepts))), percepts);
+            addActionToQueue(new Move(new Distance(5)), percepts);
         }
-    }
-
-    @Override
-    protected void dropPheromone(GuardPercepts p, SmellPerceptType type) {
-        DropPheromone action = new DropPheromone(type);
-        addActionToQueue(action, p);
-        if(type.equals("Pheromone1")) myPheromone.put(position, 5);
-
-
     }
 
     /**
@@ -655,22 +530,6 @@ public class GraphExplorer extends GuardExplorer {
         }
 
         return 1;
-    }
-    public static double getDistance(Point x, Point y) {
-        return Math.sqrt(Math.pow(x.getX() - y.getX(), 2) + Math.pow(x.getY() - y.getY(), 2));
-    }
-
-    private class objectsOnTheWay{
-
-        public String directionKey;
-        public HashMap<String, Angle[]> angleRanges;
-        public List<Point> perceptList;
-
-        objectsOnTheWay(String directionKey, HashMap<String, Angle[]> angleRanges, List<Point> perceptList){
-            this.directionKey = directionKey;
-            this.angleRanges = angleRanges;
-            this.perceptList = perceptList;
-        }
     }
 
 }
