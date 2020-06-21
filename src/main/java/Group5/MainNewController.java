@@ -28,8 +28,8 @@ public class MainNewController {
         int epochs = 100;
         int guardWins = 0;
         int totalturns = 0;
-        GuardExplorer.currentTime = 0;
         for (int i=0; i<epochs; i++){
+            GuardExplorer.currentTime = 0;
             Game game = new Game(Parser.parseFile(path), new AgentFactoryGroup5(), false);
             game.run();
             if (game.getWinner().toString().equals("GUARDS")){
