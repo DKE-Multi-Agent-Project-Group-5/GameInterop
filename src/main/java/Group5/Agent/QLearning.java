@@ -89,10 +89,10 @@ public class QLearning implements Serializable {
         this.alpha = alpha;
         this.numActions = numActions;
         this.numStates = numStates;
-        this.qTable = new double[numStates][numStates][numActions];
-        this.alphan = new int[numStates][numStates][numActions];
-//        deserializeQTable3D();
-//        deserializeAlphan();
+//        this.qTable = new double[numStates][numStates][numActions];
+//        this.alphan = new int[numStates][numStates][numActions];
+        deserializeQTable3D();
+        deserializeAlphan();
         this.rn = new Random();
         this.actionQueue = new LinkedList<>();
     }

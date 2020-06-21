@@ -52,7 +52,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
 //    private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 17;
     
     // Constants for scenario with one Intruder
-    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 12;
+    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 14;
     private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 12;
     
     // Parameters for Q-learning
@@ -84,8 +84,9 @@ public class IntruderAgent implements Interop.Agent.Intruder {
         RotateLeft(8),
         MoveToArea(9),
         RotateRight20(10),
-        RotateLeft20(11);
-        
+        RotateLeft20(11),
+        RotateRight10(12),
+        RotateLeft10(13);
         // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
 //        DropPheromone1(7),
 //        DropPheromone2(8),
@@ -160,6 +161,14 @@ public class IntruderAgent implements Interop.Agent.Intruder {
     
     protected Rotate rotateLeft20() {
         return new Rotate(Angle.fromDegrees(-20));
+    }
+    
+    protected Rotate rotateRight10() {
+        return new Rotate(Angle.fromDegrees(10));
+    }
+    
+    protected Rotate rotateLeft10() {
+        return new Rotate(Angle.fromDegrees(-10));
     }
     // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
 //    protected DropPheromone dropPheromone1() {
@@ -389,6 +398,18 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
                         intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
+                    } else if (currAction.value == 12) {
+                        actionQueue.add(rotateRight10());
+                        float reward = getReward(this.visionState, this.visionState2);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
+                        intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
+                    } else if (currAction.value == 13) {
+                        actionQueue.add(rotateLeft10());
+                        float reward = getReward(this.visionState, this.visionState2);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
+                        intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
                     }
                 }
             }
@@ -515,6 +536,18 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
                     } else if (currAction.value == 11) {
                         actionQueue.add(rotateRight20());
+                        float reward = getReward(this.visionState, this.soundState);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.soundState);
+                        intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
+                    } else if (currAction.value == 12) {
+                        actionQueue.add(rotateLeft10());
+                        float reward = getReward(this.visionState, this.soundState);
+                        // Add rounded X and Y coordinates of Points to the seen objects
+                        addToMemory(this.visionState.getType(), this.visionState, this.soundState);
+                        intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
+                    } else if (currAction.value == 13) {
+                        actionQueue.add(rotateRight10());
                         float reward = getReward(this.visionState, this.soundState);
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.soundState);
