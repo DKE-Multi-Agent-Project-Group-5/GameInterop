@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.util.Scanner;
+import java.io.*;
 
 
 public class QLearning {
@@ -81,6 +82,7 @@ public class QLearning {
     private int numActions;
     private int numStates;
     private double[][] qTable;
+    private int[][] alphan;
     
     private Point agentPosition;
     private ObjectPercept state;
@@ -103,7 +105,9 @@ public class QLearning {
         this.numActions = numActions;
         this.numStates = numStates;
         this.qTable = new double[numStates][numActions];
-//        this.qTable = readTableFromFile();
+        this.alphan = new int[numStates][numActions];
+//        deserializeAlphan();
+        this.qTable = readTableFromFile();
         this.rn = new Random();
         this.actionQueue = new LinkedList<>();
     }
@@ -125,6 +129,9 @@ public class QLearning {
         int maxIndex = getMaxValue(qTablePart);
         double chance = Math.random();
         Random rand = new Random();
+        
+        //update epsilon value
+        epsilon = (float) (1.0/(1+Math.log(1+Arrays.stream(alphan[stateIndex]).sum())));
         
         // Perform random action if chance is smaller than epsilon value
         // Otherwise return maxValue action index from Q-table
@@ -209,6 +216,10 @@ public class QLearning {
                 break;
             }
         }
+    
+        //Adaptive alpha
+        alphan[this.currState.value][currentAction]++;
+        alpha = (float) (1.0/Math.log(1+alphan[this.currState.value][currentAction]));
         
         //Bellman Equation to update Q-table
         double update = reward + gamma * findMaxQState(this.currState.value) - qTable[this.prevState.value][this.prevAction];
@@ -239,6 +250,10 @@ public class QLearning {
             }
         }
     
+        //Adaptive alpha
+        alphan[this.currState.value][currentAction]++;
+        alpha = (float) (1.0/Math.log(1+alphan[this.currState.value][currentAction]));
+    
         //Bellman Equation to update Q-table
         double update = reward + gamma * findMaxQState(this.currState.value) - qTable[this.prevState.value][this.prevAction];
         qTable[this.prevState.value][this.prevAction] = qTable[this.prevState.value][this.prevAction] + alpha * update;
@@ -267,6 +282,10 @@ public class QLearning {
                 break;
             }
         }
+    
+        //Adaptive alpha
+        alphan[this.currState.value][currentAction]++;
+        alpha = (float) (1.0/Math.log(1+alphan[this.currState.value][currentAction]));
     
         //Bellman Equation to update Q-table
         double update = reward + gamma * findMaxQState(this.currState.value) - qTable[this.prevState.value][this.prevAction];
@@ -358,5 +377,39 @@ public class QLearning {
             e.printStackTrace();
         }
         return null;
+    }
+    
+    /**
+     * Make the Alphan a serializable object
+     */
+    protected void serializeAlphan(){
+        try {
+            FileOutputStream fileOut =
+                    new FileOutputStream("src/main/java/Group5/Alphan.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(this.alphan);
+            out.close();
+            fileOut.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+    }
+    
+    /**
+     * Deserialize the Alphan object
+     */
+    private void deserializeAlphan() {
+        try {
+            FileInputStream fileIn = new FileInputStream("src/main/java/Group5/Alphan.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            this.alphan = (int [][]) in.readObject();
+            in.close();
+            fileIn.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+        } catch (ClassNotFoundException c) {
+            System.out.println("Alpha table not found");
+            c.printStackTrace();
+        }
     }
 }
