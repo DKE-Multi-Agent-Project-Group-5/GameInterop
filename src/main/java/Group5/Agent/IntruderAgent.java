@@ -7,6 +7,7 @@ import java.util.Random;
 import Group5.GameController.AgentController;
 import Group5.GameController.MapInfo;
 import Group5.GameController.Vision;
+import Group5.MainNewController;
 import Interop.Action.Action;
 import Interop.Action.DropPheromone;
 import Interop.Action.IntruderAction;
@@ -53,7 +54,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
 //    private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 17;
     
     // Constants for scenario with one Intruder
-    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 12;
+    private static final int NUMBER_OF_POSSIBLE_ACTIONS = 17;
     private static final int NUMBER_OF_POSSIBLE_SINGLE_STATES = 12;
     
     // Parameters for Q-learning
@@ -86,12 +87,11 @@ public class IntruderAgent implements Interop.Agent.Intruder {
         MoveToArea(9),
         RotateRight20(10),
         RotateLeft20(11),
-        RotateRight10(12),
-        RotateLeft10(13);
-        RotateLeft20(11),
         RotateAway(12),
         RotateAwaySound(13),
-        RotateParallelToWall(14);
+        RotateParallelToWall(14),
+        RotateRight10(15),
+        RotateLeft10(16);
 
         // Smell is used only when intruders are more than 1 - if so, uncomment block of code below
 //        DropPheromone1(7),
@@ -117,7 +117,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
     
     protected Rotate randomRotate() {
         Random rd = new Random();
-        return new Rotate(Angle.fromDegrees(1 + (359) * rd.nextDouble()));
+        return new Rotate(Angle.fromDegrees(1 + (44) * rd.nextDouble()));
     }
     
     protected Move randomWalk(IntruderPercepts intruderPercepts) {
@@ -458,13 +458,13 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
                         intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
-                    } else if (currAction.value == 12) {
+                    } else if (currAction.value == 15) {
                         actionQueue.add(rotateRight10());
                         float reward = getReward(this.visionState, this.visionState2);
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.visionState2);
                         intruderQL.updateQTable(this.visionState.getType(), this.visionState2.getType(),  currAction.value, reward);
-                    } else if (currAction.value == 13) {
+                    } else if (currAction.value == 16) {
                         actionQueue.add(rotateLeft10());
                         float reward = getReward(this.visionState, this.visionState2);
                         // Add rounded X and Y coordinates of Points to the seen objects
@@ -618,13 +618,13 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.soundState);
                         intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
-                    } else if (currAction.value == 12) {
+                    } else if (currAction.value == 15) {
                         actionQueue.add(rotateLeft10());
                         float reward = getReward(this.visionState, this.soundState);
                         // Add rounded X and Y coordinates of Points to the seen objects
                         addToMemory(this.visionState.getType(), this.visionState, this.soundState);
                         intruderQL.updateQTable(this.visionState.getType(), this.soundState.getType(),  currAction.value, reward);
-                    } else if (currAction.value == 13) {
+                    } else if (currAction.value == 16) {
                         actionQueue.add(rotateRight10());
                         float reward = getReward(this.visionState, this.soundState);
                         // Add rounded X and Y coordinates of Points to the seen objects
@@ -659,12 +659,22 @@ public class IntruderAgent implements Interop.Agent.Intruder {
     protected float getReward(ObjectPercept state, ObjectPercept state2) {
         
         float reward;
+
+        if (MainNewController.getPath().equals("./src/main/java/Group9/map/maps/test_2.map")){
+            if (state.getType() == ObjectPerceptType.TargetArea || state2.getType() == ObjectPerceptType.TargetArea
+                    || state.getType() == ObjectPerceptType.Teleport || state2.getType() == ObjectPerceptType.Teleport) {
+                reward = 1f;
+                return reward;
+            }
+        }
+        else{
+            if (state.getType() == ObjectPerceptType.TargetArea || state2.getType() == ObjectPerceptType.TargetArea) {
+                reward = 1f;
+                return reward;
+            }
+        }
         
-        // Assign some basic reward for now, need to fix this later
-        if (state.getType() == ObjectPerceptType.TargetArea || state2.getType() == ObjectPerceptType.TargetArea) {
-            reward = 1f;
-            return reward;
-        } else if (state.getType() == ObjectPerceptType.Guard || state2.getType() == ObjectPerceptType.Guard) {
+        if (state.getType() == ObjectPerceptType.Guard || state2.getType() == ObjectPerceptType.Guard) {
             reward = -1.2f;
             return reward;
         } else if (state.getType() == ObjectPerceptType.Intruder) {
@@ -704,11 +714,19 @@ public class IntruderAgent implements Interop.Agent.Intruder {
         
         float reward;
         
-        // Assign some basic reward for now, need to fix this later
-        if (state.getType() == ObjectPerceptType.TargetArea) {
-            reward = 1f;
-            return reward;
-        } else if (state.getType() == ObjectPerceptType.Guard || state2.getType() == SoundPerceptType.Yell
+        if (MainNewController.getPath().equals("./src/main/java/Group9/map/maps/test_2.map")){
+            if (state.getType() == ObjectPerceptType.TargetArea || state.getType() == ObjectPerceptType.Teleport) {
+                reward = 1f;
+                return reward;
+            }
+        }
+        else {
+            if (state.getType() == ObjectPerceptType.TargetArea) {
+                reward = 1f;
+                return reward;
+            }
+        }
+        if (state.getType() == ObjectPerceptType.Guard || state2.getType() == SoundPerceptType.Yell
         || state2.getType() == SoundPerceptType.Noise) {
             reward = -3f;
             return reward;

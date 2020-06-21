@@ -14,6 +14,9 @@ public class MainNewController {
      * The agents only walk in one certain direction, actually for inspiration look at the randomAgent class from group 9 it is actually already a decent implementation
      * @param args
      */
+
+    private static String path = "./src/main/java/Group9/map/maps/test_2.map";
+    
 //    public static void main(String[] args) {
 //        new Thread(() -> Application.launch(Gui.class)).start();
 //    }
@@ -22,12 +25,15 @@ public class MainNewController {
         int epochs = 100;
         int guardWins = 0;
         for (int i=0; i<epochs; i++){
-            Game game = new Game(Parser.parseFile("./src/main/java/Group9/map/maps/test_2.map"), new AgentFactoryGroup5(), false);
+            Game game = new Game(Parser.parseFile(path), new AgentFactoryGroup5(), false);
             game.run();
             if (game.getWinner().toString().equals("GUARDS"))
                 guardWins++;
             System.out.printf("The winner is: %s\n", game.getWinner());
         }
         System.out.println("The guards won " + (guardWins*100/epochs) + "% of " + epochs + " matches.");
+    }
+    public static String getPath(){
+        return path;
     }
 }
