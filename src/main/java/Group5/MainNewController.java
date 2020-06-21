@@ -23,7 +23,7 @@ public class MainNewController {
 //    }
 
     public static void main(String[] args) {
-        int epochs = 2;
+        int epochs = 100;
         int guardWins = 0;
         int totalturns = 0;
         for (int i=0; i<epochs; i++){
