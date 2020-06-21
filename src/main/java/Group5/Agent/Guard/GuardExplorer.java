@@ -29,11 +29,14 @@ public class GuardExplorer implements Guard {
     private int droppedPheromone;
     private int movedSomewhere;
     private ArrayList<DropPheromone> myPheromone = new ArrayList<>();
+    public static int currentTime;
 
     @Override
     public GuardAction getAction(GuardPercepts percepts) {
         //return explore(percepts);
         //if queue is empty otherwise do actions inside queue
+
+        currentTime++;
 
         if (actionQueue.size() <= 0)
             explore(percepts);
@@ -322,7 +325,7 @@ public class GuardExplorer implements Guard {
 
         lastDistanceToIntruder = new Distance(distanceToIntruder);
 
-        lastTimeSawIntruder = 30;
+        lastTimeSawIntruder = 0;
 
         if (Math.abs(angleToIntruder / count) > 15) {
             if (Math.random() < 0.2) {

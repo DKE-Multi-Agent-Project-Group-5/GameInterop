@@ -27,7 +27,7 @@ public class GraphExplorer extends GuardExplorer {
     private Angle angle;
 
     private double radius;
-    public static int currentTime;
+
     private double epsilon; // two ObjectPercepts of the same type are considered identical of their distance is less than epsilon
 
     private String mode;
@@ -44,7 +44,7 @@ public class GraphExplorer extends GuardExplorer {
         position = new Point(0, 0);
         nodes = new ArrayList<>();
         angle = Angle.fromDegrees(0);
-        radius = 30;
+        radius = 5;
         currentTime = 0;
         epsilon = 0.5;
         mode = "graph";
