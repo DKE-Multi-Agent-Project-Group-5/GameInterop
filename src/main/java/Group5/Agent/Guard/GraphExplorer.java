@@ -27,7 +27,7 @@ public class GraphExplorer extends GuardExplorer {
     private Angle angle;
 
     private double radius;
-    private int currentTime;
+    public static int currentTime;
     private double epsilon; // two ObjectPercepts of the same type are considered identical of their distance is less than epsilon
 
     private String mode;
@@ -246,6 +246,7 @@ public class GraphExplorer extends GuardExplorer {
 //        if (!percepts.wasLastActionExecuted()){
 //            actionQueue.clear();
 //        }
+        currentTime++;
 
         GuardAction a = super.getAction(percepts);
         if (a instanceof Rotate) {

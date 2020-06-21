@@ -1,5 +1,6 @@
 package Group5;
 
+import Group5.Agent.Guard.GraphExplorer;
 import Group5.factories.AgentFactoryGroup5;
 import Group9.gui2.Gui;
 import Group9.Game;
@@ -22,16 +23,20 @@ public class MainNewController {
 //    }
 
     public static void main(String[] args) {
-        int epochs = 1000;
+        int epochs = 2;
         int guardWins = 0;
+        int totalturns = 0;
         for (int i=0; i<epochs; i++){
             Game game = new Game(Parser.parseFile(path), new AgentFactoryGroup5(), false);
             game.run();
-            if (game.getWinner().toString().equals("GUARDS"))
+            if (game.getWinner().toString().equals("GUARDS")){
                 guardWins++;
+                totalturns = totalturns + GraphExplorer.currentTime/2;
+            }
             System.out.printf("The winner is: %s\n", game.getWinner());
         }
         System.out.println("The guards won " + (guardWins*100/epochs) + "% of " + epochs + " matches.");
+        System.out.println("Average amount of turns to win " + (totalturns/epochs));
     }
     public static String getPath(){
         return path;
