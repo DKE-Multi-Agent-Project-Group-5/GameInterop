@@ -1,9 +1,11 @@
 package Group5;
 
 import Group5.Agent.Guard.GraphExplorer;
+import Group5.Agent.Guard.GuardExplorer;
 import Group5.factories.AgentFactoryGroup5;
 import Group9.gui2.Gui;
 import Group9.Game;
+import Interop.Agent.Guard;
 import javafx.application.Application;
 import Group9.map.parser.Parser;
 
@@ -26,12 +28,13 @@ public class MainNewController {
         int epochs = 100;
         int guardWins = 0;
         int totalturns = 0;
+        GuardExplorer.currentTime = 0;
         for (int i=0; i<epochs; i++){
             Game game = new Game(Parser.parseFile(path), new AgentFactoryGroup5(), false);
             game.run();
             if (game.getWinner().toString().equals("GUARDS")){
                 guardWins++;
-                totalturns = totalturns + GraphExplorer.currentTime/2;
+                totalturns = totalturns + GuardExplorer.currentTime/2;
             }
             System.out.printf("The winner is: %s\n", game.getWinner());
         }
