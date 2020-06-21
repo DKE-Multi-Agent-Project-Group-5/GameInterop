@@ -22,7 +22,7 @@ public class MainNewController {
 //    }
 
     public static void main(String[] args) {
-        int epochs = 100;
+        int epochs = 1000;
         int guardWins = 0;
         for (int i=0; i<epochs; i++){
             Game game = new Game(Parser.parseFile(path), new AgentFactoryGroup5(), false);
