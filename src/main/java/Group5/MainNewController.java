@@ -31,7 +31,7 @@ public class MainNewController {
 
     public static void main(String[] args) throws FileNotFoundException {
         ArrayList<Integer> turns = new ArrayList<>();
-        int epochs = 3;
+        int epochs = 100;
         int guardWins = 0;
         int totalturns = 0;
         for (int i=0; i<epochs; i++){
@@ -57,8 +57,6 @@ public class MainNewController {
     public static void writeOnTxt(ArrayList<Integer> list) throws FileNotFoundException {
         PrintWriter writer = new PrintWriter(new File("Turns list.txt"));
         StringBuilder sb = new StringBuilder();
-
-        sb.append("nb of turns: ");
 
         try {
             for (Integer i: list) {
