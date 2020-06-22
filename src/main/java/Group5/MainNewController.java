@@ -9,6 +9,11 @@ import Interop.Agent.Guard;
 import javafx.application.Application;
 import Group9.map.parser.Parser;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
 public class MainNewController {
 
     /**
@@ -18,30 +23,56 @@ public class MainNewController {
      * @param args
      */
 
-    private static String path = "C:\\Users\\Esra\\Documents\\Uni\\DataScience\\Year2\\Project22\\Group 5 fork\\GameInterop\\src\\main\\java\\Group5\\Maps\\simple.map";
+    private static String path = "src/main/java/Group9/map/maps/test_2.map";
     
 //    public static void main(String[] args) {
 //        new Thread(() -> Application.launch(Gui.class)).start();
 //    }
 
-    public static void main(String[] args) {
-        int epochs = 100;
+    public static void main(String[] args) throws FileNotFoundException {
+        ArrayList<Integer> turns = new ArrayList<>();
+        int epochs = 3;
         int guardWins = 0;
         int totalturns = 0;
         for (int i=0; i<epochs; i++){
             GuardExplorer.currentTime = 0;
             Game game = new Game(Parser.parseFile(path), new AgentFactoryGroup5(), false);
             game.run();
+
             if (game.getWinner().toString().equals("GUARDS")){
                 guardWins++;
                 totalturns = totalturns + GuardExplorer.currentTime/2;
+                turns.add(GuardExplorer.currentTime/2);
             }
             System.out.printf("The winner is: %s\n", game.getWinner());
         }
+        writeOnTxt(turns);
         System.out.println("The guards won " + (guardWins*100/epochs) + "% of " + epochs + " matches.");
         System.out.println("Average amount of turns to win " + (totalturns/epochs));
     }
     public static String getPath(){
         return path;
+    }
+
+    public static void writeOnTxt(ArrayList<Integer> list) throws FileNotFoundException {
+        PrintWriter writer = new PrintWriter(new File("Turns list.txt"));
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("nb of turns: ");
+
+        try {
+            for (Integer i: list) {
+                sb.append(i);
+                sb.append("\n");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            writer.write(sb.toString());
+            writer.close();
+        }
+
+        //out.println(sb.toString());
+        writer.write(sb.toString());
+        writer.close();
+
     }
 }
