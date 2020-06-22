@@ -18,7 +18,7 @@ public class MainNewController {
      * @param args
      */
 
-    private static String path = "./src/main/java/Group9/map/maps/test_2.map";
+    private static String path = "C:\\Users\\Esra\\Documents\\Uni\\DataScience\\Year2\\Project22\\Group 5 fork\\GameInterop\\src\\main\\java\\Group5\\Maps\\simple.map";
     
 //    public static void main(String[] args) {
 //        new Thread(() -> Application.launch(Gui.class)).start();
