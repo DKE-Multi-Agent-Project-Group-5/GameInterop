@@ -48,7 +48,7 @@ public class MainNewController {
         }
         writeOnTxt(turns);
         System.out.println("The guards won " + (guardWins*100/epochs) + "% of " + epochs + " matches.");
-        System.out.println("Average amount of turns to win " + (totalturns/epochs));
+        System.out.println("Average amount of turns to win " + (totalturns/guardWins));
     }
     public static String getPath(){
         return path;
