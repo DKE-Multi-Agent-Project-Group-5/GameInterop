@@ -104,9 +104,9 @@ public class QLearning {
         this.alpha = alpha;
         this.numActions = numActions;
         this.numStates = numStates;
-        this.qTable = new double[numStates][numActions];
-        this.alphan = new int[numStates][numActions];
-//        deserializeAlphan();
+//        this.qTable = new double[numStates][numActions];
+//        this.alphan = new int[numStates][numActions];
+        deserializeAlphan();
         this.qTable = readTableFromFile();
         this.rn = new Random();
         this.actionQueue = new LinkedList<>();

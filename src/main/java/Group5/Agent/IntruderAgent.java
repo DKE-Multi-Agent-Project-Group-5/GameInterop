@@ -465,6 +465,7 @@ public class IntruderAgent implements Interop.Agent.Intruder {
                 }
             }
             intruderQL.writeTableToFile();
+            intruderQL.serializeAlphan();
         }
     
         else {
